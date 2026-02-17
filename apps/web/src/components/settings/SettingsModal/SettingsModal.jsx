@@ -102,7 +102,10 @@ export default function SettingsPanel({
         syncWithProps();
     }
 
-
+    // Don't render anything if modal is closed
+    if (!isOpen) {
+        return null;
+    }
 
     return (
         <div
