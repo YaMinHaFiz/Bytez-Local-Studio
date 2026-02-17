@@ -1,0 +1,213 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-zinc-950: #09090b;
+  --color-zinc-900: #18181b;
+  --color-zinc-800: #27272a;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-100: #f4f4f5;
+
+  /* Semantic mappings */
+  --color-bg-canvas: var(--color-zinc-950);
+  --color-bg-surface: var(--color-zinc-900);
+  --color-bg-surface-hover: var(--color-zinc-800);
+  --color-border-subtle: var(--color-zinc-800);
+  --color-text-primary: var(--color-zinc-100);
+  --color-text-secondary: var(--color-zinc-400);
+}
+
+@layer base {
+  body {
+    @apply bg-zinc-950 text-zinc-100 antialiased font-sans overflow-hidden;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors;
+}
+
+/* Markdown Content Styles */
+.markdown-body {
+  @apply text-zinc-300 leading-relaxed text-[15px];
+}
+
+.markdown-body p {
+  @apply mb-4 last:mb-0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  @apply text-zinc-100 font-medium mt-6 mb-3 first:mt-0;
+}
+
+.markdown-body code {
+  @apply font-mono text-sm bg-zinc-800/50 px-1.5 py-0.5 rounded text-zinc-200;
+}
+
+.markdown-body pre {
+  @apply bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 mb-4 overflow-x-auto;
+}
+
+.markdown-body pre code {
+  @apply bg-transparent p-0 text-sm text-zinc-300 block;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  @apply mb-4 pl-6 space-y-1;
+}
+
+.markdown-body ul {
+  @apply list-disc;
+}
+
+.markdown-body ol {
+  @apply list-decimal;
+}
+
+.markdown-body a {
+  @apply text-blue-400 hover:text-blue-300 underline underline-offset-2;
+}
+
+.markdown-body blockquote {
+  @apply border-l-2 border-zinc-700 pl-4 py-1 text-zinc-400 italic my-4;
+}
+
+/* Table Styles */
+.markdown-body table {
+  @apply w-full border-collapse;
+}
+
+.markdown-body thead {
+  @apply bg-zinc-800/50;
+}
+
+.markdown-body th {
+  @apply px-4 py-2.5 text-left font-semibold text-zinc-200 border-b border-zinc-700;
+}
+
+.markdown-body td {
+  @apply px-4 py-2 border-b border-zinc-800/50;
+}
+
+.markdown-body tbody tr {
+  @apply transition-colors;
+}
+
+.markdown-body tbody tr:nth-child(even) {
+  @apply bg-zinc-900/30;
+}
+
+.markdown-body tbody tr:hover {
+  @apply bg-zinc-800/30;
+}
+
+/* KaTeX Math Styles */
+.markdown-body .katex {
+  @apply text-zinc-200;
+  font-size: 1.1em;
+}
+
+.markdown-body .katex-display {
+  @apply my-4 overflow-x-auto;
+}
+
+.markdown-body .katex-display .katex {
+  @apply text-base;
+}
+
+.markdown-body code .katex {
+  font-size: 1em;
+}
+
+/* ── Animation Keyframes ── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Utility classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s ease-out both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out both;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 1.5s ease-in-out infinite;
+}
+
+/* Smooth height transition for collapsible sections */
+.collapse-transition {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease-out;
+}
+
+.collapse-transition.expanded {
+  grid-template-rows: 1fr;
+}
+
+.collapse-transition > div {
+  overflow: hidden;
+}
