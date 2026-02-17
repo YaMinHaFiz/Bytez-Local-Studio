@@ -11,7 +11,7 @@
  * - Custom model management
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import {
     X,
     Key,
@@ -25,7 +25,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { BUILT_IN_MODELS } from '../../../context/SettingsContext';
+import { BUILT_IN_MODELS } from '../../../constants/models';
 
 const TABS = [
     { id: 'api', label: 'API', icon: Key },
@@ -42,7 +42,6 @@ export default function SettingsPanel({
     onSystemPromptChange,
     modelId,
     onModelIdChange,
-    customModels = [],
     allModels = [],
     onAddCustomModel,
     onRemoveCustomModel,
@@ -52,28 +51,6 @@ export default function SettingsPanel({
     const [newModelId, setNewModelId] = useState('');
     const [newModelName, setNewModelName] = useState('');
     const [addError, setAddError] = useState('');
-
-    // Animation state for mount/unmount
-    const [shouldRender, setShouldRender] = useState(false);
-    const [animateIn, setAnimateIn] = useState(false);
-    const closingRef = useRef(false);
-
-    useEffect(() => {
-        if (isOpen) {
-            setShouldRender(true);
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => setAnimateIn(true));
-            });
-        } else if (shouldRender) {
-            setAnimateIn(false);
-            closingRef.current = true;
-            const timer = setTimeout(() => {
-                setShouldRender(false);
-                closingRef.current = false;
-            }, 300);
-            return () => clearTimeout(timer);
-        }
-    }, [isOpen]);
 
     // Use refs to track if we need to sync with props
     const [syncKey, setSyncKey] = useState(0);
@@ -125,31 +102,20 @@ export default function SettingsPanel({
         syncWithProps();
     }
 
-    if (!shouldRender) return null;
+
 
     return (
         <div
-            className={clsx(
-                'fixed inset-0 z-50 flex justify-end transition-opacity duration-300',
-                animateIn ? 'opacity-100' : 'opacity-0'
-            )}
+            className="fixed inset-0 z-50 flex justify-end"
             onClick={handleBackdropClick}
         >
             {/* Backdrop with blur */}
-            <div
-                className={clsx(
-                    'absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300',
-                    animateIn ? 'opacity-100' : 'opacity-0'
-                )}
-            />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
             {/* Panel */}
             <div
-                className={clsx(
-                    'relative w-full max-w-md h-full bg-zinc-950/95 border-l border-zinc-800/50 shadow-2xl shadow-black/50',
-                    'flex flex-col overflow-hidden transition-transform duration-300 ease-out',
-                    animateIn ? 'translate-x-0' : 'translate-x-full'
-                )}
+                className="relative w-full max-w-md h-full bg-zinc-950/95 border-l border-zinc-800/50 shadow-2xl shadow-black/50
+                    flex flex-col overflow-hidden"
             >
                 {/* Header with gradient accent */}
                 <div className="relative">

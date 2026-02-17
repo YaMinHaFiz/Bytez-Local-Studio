@@ -5,7 +5,7 @@
  * and room for the floating input capsule at the bottom.
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { MessageSquare, AlertCircle } from 'lucide-react';
 import MessageBubble from '../MessageBubble/MessageBubble';
 import ChatInput from '../ChatInput/ChatInput';
@@ -32,7 +32,7 @@ export default function ChatWindow({
 
     // Get messages from current conversation
     const currentConversation = getCurrentConversation();
-    const messages = currentConversation?.messages || [];
+    const messages = useMemo(() => currentConversation?.messages || [], [currentConversation]);
     
     console.log('[ChatWindow] Render - conversationId:', conversationId);
     console.log('[ChatWindow] Render - messages count:', messages.length);
@@ -59,7 +59,7 @@ export default function ChatWindow({
     };
 
     // Main send
-    const sendMessage = async (overrideInput = null) => {
+    const sendMessage = useCallback(async (overrideInput = null) => {
         const textToSend = overrideInput || input;
         console.log('[ChatWindow] sendMessage called with:', textToSend?.substring(0, 50));
         console.log('[ChatWindow] isLoading:', isLoading);
@@ -165,7 +165,7 @@ export default function ChatWindow({
             setIsLoading(false);
             abortControllerRef.current = null;
         }
-    };
+    }, [input, isLoading, apiKey, conversationId, messages, systemPrompt, modelId, createConversation, onConversationCreated, appendMessage]);
 
     const handleCancel = useCallback(() => {
         console.log('[ChatWindow] Cancel requested');
@@ -193,8 +193,6 @@ export default function ChatWindow({
             const lastMsg = conversation.messages[conversation.messages.length - 1];
             if (lastMsg.role === 'assistant') {
                 // Remove the last assistant message
-                const updatedMessages = conversation.messages.slice(0, -1);
-                // Update conversation with removed message
                 // Note: We need to add a method to update messages or handle this differently
                 // For now, we'll just regenerate without removing
             }
@@ -202,7 +200,7 @@ export default function ChatWindow({
 
         // Resend the message
         await sendMessage(lastUserMessage.content);
-    }, [conversationId, isLoading, messages, getCurrentConversation]);
+    }, [conversationId, isLoading, messages, getCurrentConversation, sendMessage]);
 
     const displayMessages = streamingContent
         ? [...messages, { role: 'assistant', content: streamingContent }]
