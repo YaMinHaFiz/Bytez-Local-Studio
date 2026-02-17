@@ -142,36 +142,8 @@ Change the system prompt in Settings to customize the AI's behavior and personal
 
 The app uses Tailwind CSS with a custom color scheme. You can modify colors in the Tailwind configuration file.
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and development process.
-
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- [Bytez](https://bytez.com) for providing the AI API
-- [React](https://react.dev/) team for the amazing framework
-- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
-- [Vite](https://vitejs.dev/) for the blazing fast build tool
-
-## 📧 Support
-
-If you encounter any issues or have questions:
-
-- Open an [issue](https://github.com/yourusername/bytez-local-studio/issues)
-- Check the [documentation](docs/)
-
 ---
-
-<p align="center">Made with ❤️ for the AI community</p>
