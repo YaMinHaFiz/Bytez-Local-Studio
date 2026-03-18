@@ -57,6 +57,7 @@ export default function SettingsPanel({
     const [tempModelId, setTempModelId] = useState(() => modelId || '');
     const prevIsOpenRef = useRef(false);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Modal state sync is intentional for cancel/reset functionality
     useEffect(() => {
         if (isOpen && !prevIsOpenRef.current) {
             setTempApiKey(apiKey || '');
