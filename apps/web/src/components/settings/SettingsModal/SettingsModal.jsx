@@ -52,25 +52,19 @@ export default function SettingsPanel({
     const [newModelId, setNewModelId] = useState('');
     const [newModelName, setNewModelName] = useState('');
     const [addError, setAddError] = useState('');
-    const [tempApiKey, setTempApiKey] = useState('');
-    const [tempSystemPrompt, setTempSystemPrompt] = useState('');
-    const [tempModelId, setTempModelId] = useState('');
-    const initialLoadRef = useRef(true);
+    const [tempApiKey, setTempApiKey] = useState(() => apiKey || '');
+    const [tempSystemPrompt, setTempSystemPrompt] = useState(() => systemPrompt || '');
+    const [tempModelId, setTempModelId] = useState(() => modelId || '');
+    const prevIsOpenRef = useRef(false);
 
     useEffect(() => {
-        if (isOpen && initialLoadRef.current) {
+        if (isOpen && !prevIsOpenRef.current) {
             setTempApiKey(apiKey || '');
             setTempSystemPrompt(systemPrompt || '');
             setTempModelId(modelId || '');
-            initialLoadRef.current = false;
         }
+        prevIsOpenRef.current = isOpen;
     }, [isOpen, apiKey, systemPrompt, modelId]);
-
-    useEffect(() => {
-        if (!isOpen) {
-            initialLoadRef.current = true;
-        }
-    }, [isOpen]);
 
     const handleBackdropClick = (e) => {
         if (e.target === e.currentTarget) onClose();
