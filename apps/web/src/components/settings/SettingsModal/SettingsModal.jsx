@@ -57,7 +57,7 @@ export default function SettingsPanel({
     const [tempModelId, setTempModelId] = useState(() => modelId || '');
     const prevIsOpenRef = useRef(false);
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Modal state sync is intentional for cancel/reset functionality
+    /* eslint-disable react-hooks/set-state-in-effect */
     useEffect(() => {
         if (isOpen && !prevIsOpenRef.current) {
             setTempApiKey(apiKey || '');
@@ -66,6 +66,7 @@ export default function SettingsPanel({
         }
         prevIsOpenRef.current = isOpen;
     }, [isOpen, apiKey, systemPrompt, modelId]);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     const handleBackdropClick = (e) => {
         if (e.target === e.currentTarget) onClose();
