@@ -5,6 +5,7 @@
  * - Conversations (chat history)
  * - API Key
  * - System Prompt
+ * - Custom Models
  * 
  * All data is stored locally in the browser and survives page refreshes.
  */
@@ -16,37 +17,34 @@ const STORAGE_KEYS = {
     CUSTOM_MODELS: 'bytez_custom_models'
 };
 
-/**
- * Handle storage errors gracefully (e.g., quota exceeded)
- * @param {Error} error - The error object
- * @param {string} operation - Description of the operation that failed
- */
+let storageErrorCallback = null;
+
+export function setStorageErrorHandler(callback) {
+    storageErrorCallback = callback;
+}
+
 function handleStorageError(error, operation) {
     console.error(`Storage error during ${operation}:`, error);
     
     if (error.name === 'QuotaExceededError' || 
         (error.message && error.message.includes('quota'))) {
-        alert(
-            'Storage limit exceeded. Please delete some old conversations ' +
-            'to free up space, or clear your browser data.'
-        );
+        if (storageErrorCallback) {
+            storageErrorCallback({
+                type: 'quota_exceeded',
+                message: 'Storage limit exceeded. Please delete some old conversations to free up space.'
+            });
+        }
     }
     
-    // Re-throw so caller can handle if needed
     throw error;
 }
 
-/**
- * Retrieve all conversations from localStorage
- * @returns {Array} Array of conversation objects
- */
 export function getConversations() {
     try {
         const data = localStorage.getItem(STORAGE_KEYS.CONVERSATIONS);
         if (!data) return [];
         
         const parsed = JSON.parse(data);
-        // Validate that it's an array
         if (!Array.isArray(parsed)) return [];
         
         return parsed;
@@ -56,22 +54,21 @@ export function getConversations() {
     }
 }
 
-/**
- * Persist all conversations to localStorage
- * @param {Array} conversations - Array of conversation objects
- */
 export function saveConversations(conversations) {
     try {
+        const dataSize = new Blob([JSON.stringify(conversations)]).size;
+        const maxSize = 5 * 1024 * 1024;
+        
+        if (dataSize > maxSize) {
+            throw new Error('Data size exceeds storage limit');
+        }
+        
         localStorage.setItem(STORAGE_KEYS.CONVERSATIONS, JSON.stringify(conversations));
     } catch (error) {
         handleStorageError(error, 'saving conversations');
     }
 }
 
-/**
- * Retrieve stored API key from localStorage
- * @returns {string} The stored API key or empty string
- */
 export function getAPIKey() {
     try {
         return localStorage.getItem(STORAGE_KEYS.API_KEY) || '';
@@ -81,10 +78,6 @@ export function getAPIKey() {
     }
 }
 
-/**
- * Persist API key to localStorage
- * @param {string} key - The API key to store
- */
 export function saveAPIKey(key) {
     try {
         localStorage.setItem(STORAGE_KEYS.API_KEY, key);
@@ -93,10 +86,6 @@ export function saveAPIKey(key) {
     }
 }
 
-/**
- * Retrieve stored system prompt from localStorage
- * @returns {string} The stored system prompt or empty string
- */
 export function getSystemPrompt() {
     try {
         return localStorage.getItem(STORAGE_KEYS.SYSTEM_PROMPT) || '';
@@ -106,10 +95,6 @@ export function getSystemPrompt() {
     }
 }
 
-/**
- * Persist system prompt to localStorage
- * @param {string} prompt - The system prompt to store
- */
 export function saveSystemPrompt(prompt) {
     try {
         localStorage.setItem(STORAGE_KEYS.SYSTEM_PROMPT, prompt);
@@ -118,10 +103,6 @@ export function saveSystemPrompt(prompt) {
     }
 }
 
-/**
- * Retrieve custom models from localStorage
- * @returns {Array} Array of {id, name} objects
- */
 export function getCustomModels() {
     try {
         const data = localStorage.getItem(STORAGE_KEYS.CUSTOM_MODELS);
@@ -135,10 +116,6 @@ export function getCustomModels() {
     }
 }
 
-/**
- * Persist custom models to localStorage
- * @param {Array} models - Array of {id, name} objects
- */
 export function saveCustomModels(models) {
     try {
         localStorage.setItem(STORAGE_KEYS.CUSTOM_MODELS, JSON.stringify(models));
@@ -147,10 +124,6 @@ export function saveCustomModels(models) {
     }
 }
 
-/**
- * Wipe all stored data from localStorage
- * Use with caution - this will delete all conversations and settings
- */
 export function clearAllData() {
     try {
         localStorage.removeItem(STORAGE_KEYS.CONVERSATIONS);
@@ -162,7 +135,27 @@ export function clearAllData() {
     }
 }
 
-/**
- * Export storage keys for advanced use cases
- */
+export function exportData() {
+    return {
+        conversations: getConversations(),
+        customModels: getCustomModels(),
+        exportedAt: new Date().toISOString(),
+        version: 1
+    };
+}
+
+export function importData(data) {
+    try {
+        if (data.conversations && Array.isArray(data.conversations)) {
+            saveConversations(data.conversations);
+        }
+        if (data.customModels && Array.isArray(data.customModels)) {
+            saveCustomModels(data.customModels);
+        }
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 export { STORAGE_KEYS };

@@ -6,6 +6,7 @@
  * - Max-width container with border and rounded corners
  * - Dedicated Send button with hover states
  * - Auto-resizing textarea
+ * - Full accessibility support
  */
 
 import { useRef, useEffect } from "react";
@@ -22,7 +23,6 @@ export default function ChatInput({
 }) {
   const textareaRef = useRef(null);
 
-  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -62,6 +62,8 @@ export default function ChatInput({
               ? "border-zinc-800 opacity-60"
               : "border-zinc-800 focus-within:border-zinc-700",
           )}
+          role="search"
+          aria-label="Chat input"
         >
           <textarea
             ref={textareaRef}
@@ -72,16 +74,17 @@ export default function ChatInput({
               disabled ? "Set your API key to start..." : "Ask anything..."
             }
             disabled={isLoading || disabled}
+            aria-label="Type your message"
             className="w-full bg-transparent text-zinc-100 placeholder-zinc-500
                        resize-none outline-none text-base min-h-[40px] max-h-[200px]
-                       disabled:cursor-not-allowed transition-opacity duration-200"
+                       disabled:cursor-not-allowed transition-opacity duration-200
+                       focus-visible:outline-none"
             rows={1}
           />
 
           <div className="flex items-center justify-end pt-2">
-            {/* Action Button */}
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-zinc-500 font-mono hidden sm:inline-block">
+              <span className="text-[10px] text-zinc-500 font-mono hidden sm:inline-block" aria-hidden="true">
                 {isLoading ? "Generating..." : "Return to send"}
               </span>
 
@@ -90,8 +93,10 @@ export default function ChatInput({
                   type="button"
                   onClick={() => onCancel()}
                   className="p-2 bg-zinc-800 text-zinc-100 hover:bg-zinc-700 rounded-lg
-                             transition-all duration-150 active:scale-90"
+                             transition-all duration-150 active:scale-90
+                             focus-visible:ring-2 focus-visible:ring-blue-500"
                   title="Stop generating"
+                  aria-label="Stop generating response"
                 >
                   <Square size={16} fill="currentColor" />
                 </button>
@@ -102,10 +107,12 @@ export default function ChatInput({
                   className={clsx(
                     "p-2 rounded-lg transition-all duration-150",
                     canSubmit
-                      ? "bg-zinc-100 text-zinc-900 hover:bg-white active:scale-90"
+                      ? "bg-zinc-100 text-zinc-900 hover:bg-white active:scale-90 focus-visible:ring-2 focus-visible:ring-blue-500"
                       : "bg-zinc-800 text-zinc-500 cursor-not-allowed",
                   )}
                   title="Send message"
+                  aria-label="Send message"
+                  aria-disabled={!canSubmit}
                 >
                   <ArrowUp size={18} />
                 </button>
@@ -117,4 +124,3 @@ export default function ChatInput({
     </div>
   );
 }
-

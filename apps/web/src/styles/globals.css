@@ -12,7 +12,6 @@
   --color-zinc-400: #a1a1aa;
   --color-zinc-100: #f4f4f5;
 
-  /* Semantic mappings */
   --color-bg-canvas: var(--color-zinc-950);
   --color-bg-surface: var(--color-zinc-900);
   --color-bg-surface-hover: var(--color-zinc-800);
@@ -27,7 +26,6 @@
   }
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -41,7 +39,6 @@
   @apply bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors;
 }
 
-/* Markdown Content Styles */
 .markdown-body {
   @apply text-zinc-300 leading-relaxed text-[15px];
 }
@@ -89,7 +86,6 @@
   @apply border-l-2 border-zinc-700 pl-4 py-1 text-zinc-400 italic my-4;
 }
 
-/* Table Styles */
 .markdown-body table {
   @apply w-full border-collapse;
 }
@@ -118,7 +114,6 @@
   @apply bg-zinc-800/30;
 }
 
-/* KaTeX Math Styles */
 .markdown-body .katex {
   @apply text-zinc-200;
   font-size: 1.1em;
@@ -136,7 +131,6 @@
   font-size: 1em;
 }
 
-/* ── Animation Keyframes ── */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -180,7 +174,6 @@
   }
 }
 
-/* Utility classes */
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out both;
 }
@@ -197,7 +190,6 @@
   animation: pulse-soft 1.5s ease-in-out infinite;
 }
 
-/* Smooth height transition for collapsible sections */
 .collapse-transition {
   display: grid;
   grid-template-rows: 0fr;
@@ -210,4 +202,35 @@
 
 .collapse-transition > div {
   overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in,
+  .animate-pulse-soft {
+    animation: none !important;
+  }
+
+  .collapse-transition {
+    transition: none !important;
+  }
+}
+
+:focus-visible {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-950;
+}
+
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  @apply outline-none;
 }

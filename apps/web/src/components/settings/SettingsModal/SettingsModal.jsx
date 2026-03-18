@@ -9,9 +9,10 @@
  * - Gradient accents and glassmorphism effects
  * - Smooth animations and transitions
  * - Custom model management
+ * - Fully controlled inputs (no document.getElementById)
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     X,
     Key,
@@ -51,28 +52,34 @@ export default function SettingsPanel({
     const [newModelId, setNewModelId] = useState('');
     const [newModelName, setNewModelName] = useState('');
     const [addError, setAddError] = useState('');
+    const [tempApiKey, setTempApiKey] = useState('');
+    const [tempSystemPrompt, setTempSystemPrompt] = useState('');
+    const [tempModelId, setTempModelId] = useState('');
+    const initialLoadRef = useRef(true);
 
-    // Use refs to track if we need to sync with props
-    const [syncKey, setSyncKey] = useState(0);
+    useEffect(() => {
+        if (isOpen && initialLoadRef.current) {
+            setTempApiKey(apiKey || '');
+            setTempSystemPrompt(systemPrompt || '');
+            setTempModelId(modelId || '');
+            initialLoadRef.current = false;
+        }
+    }, [isOpen, apiKey, systemPrompt, modelId]);
 
-    // Sync state with props when panel opens
-    const syncWithProps = useCallback(() => {
-        setSyncKey(prev => prev + 1);
-    }, []);
+    useEffect(() => {
+        if (!isOpen) {
+            initialLoadRef.current = true;
+        }
+    }, [isOpen]);
 
     const handleBackdropClick = (e) => {
         if (e.target === e.currentTarget) onClose();
     };
 
     const handleSave = () => {
-        // Get values from DOM refs or controlled state
-        const apiKeyInput = document.getElementById('settings-api-key');
-        const promptInput = document.getElementById('settings-system-prompt');
-        const selectedModel = document.querySelector('input[name="model-selection"]:checked');
-
-        if (onApiKeyChange && apiKeyInput) onApiKeyChange(apiKeyInput.value.trim());
-        if (onSystemPromptChange && promptInput) onSystemPromptChange(promptInput.value);
-        if (onModelIdChange && selectedModel) onModelIdChange(selectedModel.value);
+        if (onApiKeyChange) onApiKeyChange(tempApiKey.trim());
+        if (onSystemPromptChange) onSystemPromptChange(tempSystemPrompt);
+        if (onModelIdChange) onModelIdChange(tempModelId);
 
         setSuccess(true);
         setTimeout(() => {
@@ -87,7 +94,6 @@ export default function SettingsPanel({
             setAddError('Both fields are required.');
             return;
         }
-        // Check for duplicate across all models
         if (allModels.some(m => m.id === newModelId.trim())) {
             setAddError('A model with this SDK name already exists.');
             return;
@@ -97,12 +103,10 @@ export default function SettingsPanel({
         setNewModelName('');
     };
 
-    // Sync when panel opens
-    if (isOpen && syncKey === 0) {
-        syncWithProps();
-    }
+    const handleClearPrompt = () => {
+        setTempSystemPrompt('');
+    };
 
-    // Don't render anything if modal is closed
     if (!isOpen) {
         return null;
     }
@@ -112,17 +116,13 @@ export default function SettingsPanel({
             className="fixed inset-0 z-50 flex justify-end"
             onClick={handleBackdropClick}
         >
-            {/* Backdrop with blur */}
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-            {/* Panel */}
             <div
                 className="relative w-full max-w-md h-full bg-zinc-950/95 border-l border-zinc-800/50 shadow-2xl shadow-black/50
                     flex flex-col overflow-hidden"
             >
-                {/* Header with gradient accent */}
                 <div className="relative">
-                    {/* Top gradient line */}
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
                     
                     <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-800/50">
@@ -137,22 +137,24 @@ export default function SettingsPanel({
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-lg transition-all"
+                            className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-blue-500"
+                            aria-label="Close settings"
                         >
                             <X size={20} />
                         </button>
                     </div>
                 </div>
 
-                {/* Tabs */}
                 <div className="px-6 pt-4">
-                    <div className="flex gap-1 p-1 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                    <div className="flex gap-1 p-1 bg-zinc-900/50 rounded-xl border border-zinc-800/50" role="tablist">
                         {TABS.map((tab) => {
                             const Icon = tab.icon;
                             return (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
+                                    role="tab"
+                                    aria-selected={activeTab === tab.id}
                                     className={clsx(
                                         'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                                         activeTab === tab.id
@@ -168,9 +170,7 @@ export default function SettingsPanel({
                     </div>
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 overflow-y-auto px-6 py-6">
-                    {/* Success Message */}
                     {success && (
                         <div className="mb-6 animate-fade-in">
                             <div className="flex items-center gap-3 px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl">
@@ -180,10 +180,8 @@ export default function SettingsPanel({
                         </div>
                     )}
 
-                    {/* API Tab */}
                     {activeTab === 'api' && (
-                        <div key={syncKey} className="space-y-6 animate-fade-in">
-                            {/* Info Card */}
+                        <div className="space-y-6 animate-fade-in">
                             <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10">
                                 <div className="flex items-start gap-3">
                                     <Shield size={18} className="text-blue-400 mt-0.5 flex-shrink-0" />
@@ -196,9 +194,8 @@ export default function SettingsPanel({
                                 </div>
                             </div>
 
-                            {/* API Key Input */}
                             <div className="space-y-3">
-                                <label className="flex items-center gap-2 text-sm font-medium text-zinc-300">
+                                <label htmlFor="settings-api-key" className="flex items-center gap-2 text-sm font-medium text-zinc-300">
                                     <Key size={16} className="text-zinc-500" />
                                     Bytez API Key
                                 </label>
@@ -206,7 +203,8 @@ export default function SettingsPanel({
                                     <input
                                         id="settings-api-key"
                                         type="password"
-                                        defaultValue={apiKey || ''}
+                                        value={tempApiKey}
+                                        onChange={(e) => setTempApiKey(e.target.value)}
                                         placeholder="Enter your API key"
                                         className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl
                                          text-zinc-100 placeholder-zinc-600 text-sm
@@ -232,9 +230,8 @@ export default function SettingsPanel({
                         </div>
                     )}
 
-                    {/* Model Tab */}
                     {activeTab === 'model' && (
-                        <div key={syncKey} className="space-y-6 animate-fade-in">
+                        <div className="space-y-6 animate-fade-in">
                             <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10">
                                 <div className="flex items-start gap-3">
                                     <Cpu size={18} className="text-purple-400 mt-0.5 flex-shrink-0" />
@@ -247,10 +244,9 @@ export default function SettingsPanel({
                                 </div>
                             </div>
 
-                            {/* Model list — built-in + custom */}
                             <div className="space-y-3">
                                 <label className="text-sm font-medium text-zinc-300">Active Model</label>
-                                <div className="space-y-2">
+                                <div className="space-y-2" role="radiogroup" aria-label="Select AI model">
                                     {allModels.map((model) => {
                                         const isCustom = !BUILT_IN_MODELS.some(b => b.id === model.id);
                                         return (
@@ -258,7 +254,7 @@ export default function SettingsPanel({
                                                 key={model.id}
                                                 className={clsx(
                                                     'w-full p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer block',
-                                                    modelId === model.id
+                                                    tempModelId === model.id
                                                         ? 'bg-blue-500/10 border-blue-500/30'
                                                         : 'bg-zinc-900/30 border-zinc-800 hover:border-zinc-700'
                                                 )}
@@ -269,7 +265,8 @@ export default function SettingsPanel({
                                                             type="radio"
                                                             name="model-selection"
                                                             value={model.id}
-                                                            defaultChecked={modelId === model.id}
+                                                            checked={tempModelId === model.id}
+                                                            onChange={() => setTempModelId(model.id)}
                                                             className="w-4 h-4 text-blue-500 bg-zinc-800 border-zinc-600 focus:ring-blue-500/20 flex-shrink-0"
                                                         />
                                                         <div className="ml-2 min-w-0">
@@ -298,7 +295,6 @@ export default function SettingsPanel({
                                 </div>
                             </div>
 
-                            {/* Add Custom Model Form */}
                             <div className="space-y-3 pt-2 border-t border-zinc-800/50">
                                 <label className="flex items-center gap-2 text-sm font-medium text-zinc-300">
                                     <Plus size={16} className="text-zinc-500" />
@@ -347,9 +343,8 @@ export default function SettingsPanel({
                         </div>
                     )}
 
-                    {/* Prompt Tab */}
                     {activeTab === 'prompt' && (
-                        <div key={syncKey} className="space-y-6 animate-fade-in">
+                        <div className="space-y-6 animate-fade-in">
                             <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
                                 <div className="flex items-start gap-3">
                                     <MessageSquareText size={18} className="text-amber-400 mt-0.5 flex-shrink-0" />
@@ -363,10 +358,11 @@ export default function SettingsPanel({
                             </div>
 
                             <div className="space-y-3">
-                                <label className="text-sm font-medium text-zinc-300">Custom Instructions</label>
+                                <label htmlFor="settings-system-prompt" className="text-sm font-medium text-zinc-300">Custom Instructions</label>
                                 <textarea
                                     id="settings-system-prompt"
-                                    defaultValue={systemPrompt || ''}
+                                    value={tempSystemPrompt}
+                                    onChange={(e) => setTempSystemPrompt(e.target.value)}
                                     placeholder="You are a helpful coding assistant..."
                                     rows={8}
                                     className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl
@@ -379,10 +375,8 @@ export default function SettingsPanel({
                                         Custom behavior configuration
                                     </span>
                                     <button
-                                        onClick={() => {
-                                            const textarea = document.getElementById('settings-system-prompt');
-                                            if (textarea) textarea.value = '';
-                                        }}
+                                        type="button"
+                                        onClick={handleClearPrompt}
                                         className="text-zinc-500 hover:text-zinc-300 transition-colors"
                                     >
                                         Clear
@@ -393,7 +387,6 @@ export default function SettingsPanel({
                     )}
                 </div>
 
-                {/* Footer */}
                 <div className="px-6 py-5 border-t border-zinc-800/50 bg-zinc-950/50">
                     <div className="flex items-center gap-3">
                         <button
@@ -421,4 +414,3 @@ export default function SettingsPanel({
         </div>
     );
 }
-
